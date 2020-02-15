@@ -2,19 +2,17 @@ import requests
 import json
 import os
 import threading as td
+import time
+from printer import *
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36",
     "Referer": "https://www.pixiv.net"
-}  # 请求头
+}  # 请求头，请勿更改
 
 save_path = ''  # 保存路径，默认为当前路径
 timeout = 200  # 最大等待时间，若网速过慢导致连接超时，可适当调大
-
-
-def splitshows(str):
-    '''用于打印分割线，类似于-------分割线--------'''
-    print('\033[32m' + '-' * 25 + str + '-' * 25 + '\033[0m')
+speed = 1  # 线程启动速度，默认速度为1线程/s，可适当调整速度,但速度过快会导致解析错误，推荐区间为1-10
 
 
 def parser(uid):
@@ -37,10 +35,10 @@ def parser(uid):
         like = json_info['body']['bookmarkCount']
         backs = [img_name, img_urls, like]
     except TimeoutError:
-        print(img_name + ':解析超时')
+        printer(img_name + ':解析超时', 'red')
         backs = None
     except:
-        print(str(uid) + ':解析失败')
+        printer(str(uid) + ':解析失败', 'red')
         backs = None
     return backs
 
@@ -54,14 +52,18 @@ def reservoir(url, path):
     '''
     try:
         r = requests.get(url, headers=headers, timeout=timeout).content
-        print('\033[33m正在下载:{path}\033[0m'.format(path=path))
+        printer('正在下载:{path}'.format(path=path), 'yellow')
+        if os.path.exists(path):
+            printer('已存在文件:{}'.format(path), 'green')
+            return 0
         with open(path, 'wb+') as f:
             f.write(r)
+        printer(path + '下载成功', 'green')
         return 0
     except TimeoutError:
-        print(path + ':下载超时')
+        printer(path + ':下载超时', 'red')
     except:
-        print(path + ':下载失败')
+        printer(path + ':下载失败', 'red')
 
 
 def downloader(uid, path='', like=0):
@@ -75,16 +77,14 @@ def downloader(uid, path='', like=0):
     back = parser(uid)
     if back is not None:
         if back[2] < like:
-            print('\032{}:跳过\033[0m'.format(back[0]))
+            printer('{}:跳过,不符合喜爱限制'.format(back[0]), 'green')
             return -3
         else:
             for i in range(len(back[1])):
                 if i == 0:
-                    downsuccess = reservoir(back[1][i], '{path}{name}.jpg'.format(path=path, name=back[0]))
+                    reservoir(back[1][i], '{path}{name}.jpg'.format(path=path, name=back[0]))
                 else:
-                    downsuccess = reservoir(back[1][i], '{path}{name}_p{i}.jpg'.format(path=path, name=back[0], i=i))
-                if downsuccess == 0:
-                    print('\033[32m{}p{}:下载成功\033[0m'.format(back[0], i))
+                    reservoir(back[1][i], '{path}{name}_p{i}.jpg'.format(path=path, name=back[0], i=i))
     else:
         return -2
 
@@ -96,7 +96,7 @@ def painter_spider(id, limits=200):
     :param limits:限制器，默认200画作
     :return:list:表示爬取到的画作列表,list[0]表示画家名称，之后代表画作id
     '''
-    splitshows('开始爬取id：{}'.format(id))
+    printer('开始爬取id：{}'.format(id), 'yellow', 1)
     page = 1
     all_arts = 0
     lists = []
@@ -115,49 +115,74 @@ def painter_spider(id, limits=200):
                 break
             for i in range(sum_number):
                 lists.append(illusts_lists[i]['id'])
-            print('success: 画师:{name}  第{page}页信息获取成功，已获取画作{number}'.format(name=name, page=page, number=min(all_arts, limits)))
+            printer('success: 画师:{name}  第{page}页信息获取成功，已获取画作{number}'.format(name=name, page=page, number=min(all_arts, limits)), 'green')
             page += 1
         except:
-            print('fail : 画师:{name}第{page}页信息获取失败'.format(name=name, page=page))
-    splitshows('结束爬取id：{}'.format(id))
+            printer('fail : 画师:{name}第{page}页信息获取失败'.format(name=name, page=page), 'red')
+    printer('结束爬取id：{}'.format(id), 'yellow', 1)
     return lists[:min(limits, all_arts) + 1]
 
 
-def download_all(lists, like=0):
+def search_spider(search, limits=200):
+    '''
+    用于爬取搜索结果的爬虫
+    :param search: 需要搜索的字符
+    :param limits: 限制器，默认爬取200册
+    :return: list:表示爬取到的画作列表,list[0]表示搜索名称，之后代表画作id
+    '''
+    printer('开始爬取搜索结果：{}'.format(search), 'yellow', 1)
+    page = 1
+    all_arts = 0
+    lists = []
+    while all_arts <= limits:  # 如果目前所获得的的作品少于限定,则跳出循环
+        url = 'https://www.pixiv.net/ajax/search/artworks/{search}?p={page}'.format(search=search, page=page)
+        print('get:' + url)
+        try:
+            r = json.loads(requests.get(url).text)
+            illusts_lists = r['body']['illustManga']['data']
+            sum_number = len(illusts_lists)
+            lists.append(search)
+            if sum_number == 0:  # 如果当页内作品数为0，可判定为最终页之后，表明已获取全部信息
+                break
+            for i in range(sum_number):
+                try:
+                    lists.append(illusts_lists[i]['id'])
+                except KeyError:
+                    sum_number -= 1
+            all_arts += sum_number
+            printer('success: 搜索结果:{name}  第{page}页信息获取成功，已获取画作{number}'.format(name=search, page=page, number=min(all_arts, limits)), 'green')
+        except:
+            printer('fail : 搜索结果:{name}第{page}页信息获取失败'.format(name=search, page=page), 'red')
+        page += 1
+    printer('结束爬取搜索：{}'.format(search), 'yellow', 1)
+    return lists[:min(limits, all_arts) + 1]
+
+
+def download_all(lists, like=0, mode=0):
     '''
     线程创建与下载
     :param lists: 爬虫爬取得到的列表
     :param limits: 限制下载数量，默认为150
     :param like : 筛选最少喜欢人数:默认为0
+    :param mode : 爬取模式，如果为0代表爬取画师，为1代表爬取搜素结果
     :return: d_lists : 返还下载信息列表[[名字，链接],..]
     '''
     last_id = len(lists) - 1
-    splitshows('开始下载画师:{}'.format(lists[0]))
-    root_path = save_path + '# 画师_{name}  画册总数_{number}\\'.format(name=lists[0], number=last_id)
-    if bool(1 - os.path.exists(root_path)):  # 判断是否存在画师目录，如果不存在，创建目录
+    if mode == 0:
+        printer('开始下载画师:{}'.format(lists[0]), 'yellow', 1)
+        root_path = save_path + '# 画师_{name}  画册总数_{number}\\'.format(name=lists[0], number=last_id)
+    if mode == 1:
+        printer('开始下载搜索结果:{}'.format(lists[0]), 'yellow', 1)
+        root_path = save_path + '# 搜索内容_{name}  画册总数_{number}\\'.format(name=lists[0], number=last_id)
+    if bool(1 - os.path.exists(root_path)):  # 判断是否存在画册目录，如果不存在，创建目录
         os.makedirs(root_path)
 
     for i in lists[1:]:
         try:
             locals()['t{}'.format(i)] = td.Thread(target=downloader, args=(i, root_path, like))
-            print('\033[32m 成功创建线程:{} \033[0m'.format(i))
+            printer('*成功创建线程:{}'.format(i), 'green')
             locals()['t{}'.format(i)].start()
+            time.sleep(1/speed)
         except:
-            print("Error: 无法启动线程")
-    print(splitshows('创建完成'))
-
-
-def pix(id, limits=150, like=20):
-    '''
-    主函数封装
-    :param id: 作者id
-    :param limits: 最多获取数量
-    :param like:最少喜欢
-    '''
-    lists = painter_spider(id,limits)
-    download_all(lists, like)
-
-
-if __name__ == '__main__':
-    lists = painter_spider(418969)
-    download_all(lists)
+            printer("Error: 无法启动线程", 'red')
+    printer('创建完成', 'yellow', 1)
