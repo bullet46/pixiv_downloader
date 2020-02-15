@@ -1,5 +1,5 @@
-from spider import *
-from printer import *
+from pixiv.spider import *
+from pixiv.printer import *
 import requests
 
 
