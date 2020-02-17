@@ -2,6 +2,7 @@ import requests
 import json
 import threading as td
 import time
+import os
 
 
 def input_uid():
@@ -23,8 +24,9 @@ def downloader(uid):
         for strs in excepts:
             if img_url == strs:
                 return -2
-
-        with open(str('uid' + str(uid) + '-' + img_name + '.jpg'), "wb") as f:
+        if bool(1 - os.path.exists('bilibili')):  # 判断是否存在画册目录，如果不存在，创建目录
+            os.makedirs('bilibili')
+        with open(str('bilibili//uid' + str(uid) + '-' + img_name + '.jpg'), "wb") as f:
             f.write(img.content)
             print('----{}_{}下载成功----'.format(uid, img_name))
             return 0
@@ -47,7 +49,7 @@ def download(between, speed):
 
 def main():
     lists = input_uid()
-    speed = int(input('请设置速度，越大越快(例如1为1张/秒,最多为10):'))
+    speed = int(input('请设置速度，越大越快:')) #(例如1为1张/秒,最多为10)
     if speed >= 10 or speed <= 0:
         speed = 10
     speed = 1 / speed
