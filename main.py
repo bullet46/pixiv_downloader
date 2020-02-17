@@ -1,5 +1,5 @@
 from pixiv.pixiv import *
-
+import PyQt5.uic.pyuic
 pix_id(4819066, limits=100, like=10)
 
 # pix_search('初音未来',limits=200,like=0 )
