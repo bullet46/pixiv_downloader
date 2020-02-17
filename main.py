@@ -1,8 +1,6 @@
 from pixiv.pixiv import *
 
-
-
-pix_id(4819066,limits=100,like=10)
+pix_id(4819066, limits=100, like=10)
 
 # pix_search('初音未来',limits=200,like=0 )
 
