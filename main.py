@@ -1,4 +1,7 @@
 from pixiv.pixiv import *
+from pixiv.spider import *
+
+
 
 pix_id(4819066, limits=100, like=10)
 
