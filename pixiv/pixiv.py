@@ -40,3 +40,8 @@ def pix_search(search, limits=150, like=20):
     proxy_connect()
     lists = search_spider(search, limits)
     download_all(lists, like, 1)
+
+def pix_rank(limits=200,like=20):
+    proxy_connect()
+    lists = ranking_spider(limits)
+    download_all(lists, like, 2)

@@ -231,7 +231,7 @@ def download_all(lists, like=0, mode=0, save_path='', single_dir=False, thread=5
                     locals()['t{}'.format(i)].start()
                     break
                 except:
-                    print('error')
+                    printer('error','red')
     printer('创建完成', 'yellow', 1)
 
 
