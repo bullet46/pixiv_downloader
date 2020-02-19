@@ -259,19 +259,6 @@
      <string>为画册建立单独文件夹</string>
     </property>
    </widget>
-   <widget class="QLabel" name="up_date_speed">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>340</y>
-      <width>54</width>
-      <height>12</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="download_speed">
     <property name="geometry">
      <rect>
@@ -282,7 +269,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>网络速度</string>
     </property>
    </widget>
   </widget>
@@ -300,5 +287,22 @@
   <tabstop>text_show</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>path_buttom</sender>
+   <signal>clicked()</signal>
+   <receiver>download_speed</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>340</x>
+     <y>109</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>396</x>
+     <y>345</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

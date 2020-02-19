@@ -1,19 +1,18 @@
 from pixiv.network_speed import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QPushButton, QFileDialog
 
 
 class Worker(QtCore.QThread):
     valueChanged = QtCore.pyqtSignal(str)  # 值变化信号
 
     def run(self):
-        print(2)
-        speed = speed_test()
-        self.valueChanged.emit(speed)
-        QtCore.QThread.sleep(1)
+        while True:
+            speed = speed_test()
+            self.valueChanged.emit(speed)
 
 
-class Ui_MainWindow(QtWidgets.QWidget):
+class Ui_MainWindow(object):
     def __init__(self, MainWindow):
         super(Ui_MainWindow, self).__init__()
         self.setupUi(MainWindow)
@@ -83,7 +82,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.path.setObjectName("path")
         self.path_buttom = QtWidgets.QPushButton(self.centralwidget)
         self.path_buttom.setGeometry(QtCore.QRect(320, 100, 41, 20))
-        self.path_buttom.setChecked(False)
         self.path_buttom.setObjectName("path_buttom")
         self.for_single_dir = QtWidgets.QCheckBox(self.centralwidget)
         self.for_single_dir.setGeometry(QtCore.QRect(300, 20, 151, 20))
@@ -118,29 +116,46 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.label_3.setText(_translate("MainWindow", "最少喜爱人数:"))
         self.not_use_proxy.setText(_translate("MainWindow", "免代理模式"))
         self.label_4.setText(_translate("MainWindow", "储存路径:"))
+        self.path.setText('/')
         self.path_buttom.setText(_translate("MainWindow", "..."))
         self.for_single_dir.setText(_translate("MainWindow", "为画册建立单独文件夹"))
         self.download_speed.setText(_translate("MainWindow", "下载速度"))
-        self.download_speed.setText(_translate("MainWindow", "123"))
+
+    '''事件主入口'''
 
     def main_process(self):
-        self.time()
-        self.timer = QtCore.QTimer()  # 初始化定时器
-        self.timer.timeout.connect(self.st)
-        print(2)
-        self.speed_test.start()
-        self.timer.start(1)
-        print(self.speed_test)
+        self.net_spped()  # 网络测速初始化
+        self.select_list.currentIndexChanged.connect(self.hide)
+        self.start.clicked.connect(self.spider)  # 爬取按钮
+        self.path_buttom.clicked.connect(self.explore)
 
-    def time(self):
-        self.speed_test = Worker(self)
-        print(1)
-        self.speed_test.valueChanged.connect(self.settext)
-        print(1)
+    '''若选择排名获取，则无需关键字栏'''
 
-    def settext(self, str):
+    def hide(self):
+        select_words = self.select_list.currentText()
+        if select_words == '每日排名':
+            self.keywords_input.hide()
+        else:
+            self.keywords_input.show()
+
+    '''网络信号事件'''
+
+    def net_spped(self):
+        self._threads = Worker()
+        self._threads.valueChanged.connect(self.set)
+        self._threads.start()  # 开启网络测速线程
+
+    def set(self, str):
         self.download_speed.setText(str)
 
-    def st(self):
-        print(3)
-        self.speed_test.start()
+    '''选择保存目录事件'''
+
+    def explore(self):
+        directory = QFileDialog.getExistingDirectory(None, "选择文件夹", "/")
+        self.path.setText(directory)
+
+    '''爬虫启动项'''
+
+    def spider(self):
+
+        pass
