@@ -1,14 +1,24 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'pixiv_downloader.ui'
-#
-# Created by: PyQt5 UI code generator 5.10.1
-#
-# WARNING! All changes made in this file will be lost!
-
+from pixiv.network_speed import *
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QPushButton
 
-class Ui_MainWindow(object):
+
+class Worker(QtCore.QThread):
+    valueChanged = QtCore.pyqtSignal(str)  # 值变化信号
+
+    def run(self):
+        print(2)
+        speed = speed_test()
+        self.valueChanged.emit(speed)
+        QtCore.QThread.sleep(1)
+
+
+class Ui_MainWindow(QtWidgets.QWidget):
+    def __init__(self, MainWindow):
+        super(Ui_MainWindow, self).__init__()
+        self.setupUi(MainWindow)
+        self.main_process()
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(487, 375)
@@ -21,7 +31,7 @@ class Ui_MainWindow(object):
         MainWindow.setAnimated(False)
         MainWindow.setTabShape(QtWidgets.QTabWidget.Rounded)
         MainWindow.setDockNestingEnabled(False)
-        MainWindow.setDockOptions(QtWidgets.QMainWindow.AllowTabbedDocks|QtWidgets.QMainWindow.GroupedDragging)
+        MainWindow.setDockOptions(QtWidgets.QMainWindow.AllowTabbedDocks | QtWidgets.QMainWindow.GroupedDragging)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.start = QtWidgets.QPushButton(self.centralwidget)
@@ -78,9 +88,6 @@ class Ui_MainWindow(object):
         self.for_single_dir = QtWidgets.QCheckBox(self.centralwidget)
         self.for_single_dir.setGeometry(QtCore.QRect(300, 20, 151, 20))
         self.for_single_dir.setObjectName("for_single_dir")
-        self.up_date_speed = QtWidgets.QLabel(self.centralwidget)
-        self.up_date_speed.setGeometry(QtCore.QRect(270, 340, 54, 12))
-        self.up_date_speed.setObjectName("up_date_speed")
         self.download_speed = QtWidgets.QLabel(self.centralwidget)
         self.download_speed.setGeometry(QtCore.QRect(370, 340, 54, 12))
         self.download_speed.setObjectName("download_speed")
@@ -88,7 +95,6 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.path_buttom, self.start)
@@ -114,6 +120,27 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "储存路径:"))
         self.path_buttom.setText(_translate("MainWindow", "..."))
         self.for_single_dir.setText(_translate("MainWindow", "为画册建立单独文件夹"))
-        self.up_date_speed.setText(_translate("MainWindow", "TextLabel"))
-        self.download_speed.setText(_translate("MainWindow", "TextLabel"))
+        self.download_speed.setText(_translate("MainWindow", "下载速度"))
+        self.download_speed.setText(_translate("MainWindow", "123"))
 
+    def main_process(self):
+        self.time()
+        self.timer = QtCore.QTimer()  # 初始化定时器
+        self.timer.timeout.connect(self.st)
+        print(2)
+        self.speed_test.start()
+        self.timer.start(1)
+        print(self.speed_test)
+
+    def time(self):
+        self.speed_test = Worker(self)
+        print(1)
+        self.speed_test.valueChanged.connect(self.settext)
+        print(1)
+
+    def settext(self, str):
+        self.download_speed.setText(str)
+
+    def st(self):
+        print(3)
+        self.speed_test.start()
