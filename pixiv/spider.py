@@ -3,7 +3,7 @@ import json
 import os
 import threading as td
 import datetime
-from printer import *
+from pixiv.printer import *
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36",

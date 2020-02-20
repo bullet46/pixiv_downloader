@@ -1,7 +1,3 @@
-'''
-printer 库，定义一些输出打印格式
-'''
-
 color_dic = {  # 颜色的显示字典
     'default': '37',
     'green': '32',

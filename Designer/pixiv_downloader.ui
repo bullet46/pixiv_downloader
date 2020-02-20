@@ -31,8 +31,15 @@
   <property name="windowTitle">
    <string>Pixiv_Downloader</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>H:/Desktop/download (1).png</normaloff>H:/Desktop/download (1).png</iconset>
+  </property>
   <property name="toolTipDuration">
    <number>0</number>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -119,6 +126,10 @@
     <property name="autoFillBackground">
      <bool>true</bool>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:1 rgba(84, 114, 105, 255));
+background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:1 rgba(38, 51, 47, 255));</string>
+    </property>
    </widget>
    <widget class="QSpinBox" name="max_number">
     <property name="geometry">
@@ -194,19 +205,6 @@
      <number>1000000</number>
     </property>
    </widget>
-   <widget class="QCheckBox" name="not_use_proxy">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>60</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>免代理模式</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
@@ -228,6 +226,9 @@
       <width>221</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>默认为程序所在目录</string>
     </property>
    </widget>
    <widget class="QPushButton" name="path_buttom">
@@ -262,14 +263,49 @@
    <widget class="QLabel" name="download_speed">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>340</y>
-      <width>54</width>
-      <height>12</height>
+      <x>400</x>
+      <y>335</y>
+      <width>71</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>网络速度</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>60</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>线程数</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="thread_number">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>60</y>
+      <width>42</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <number>5000</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>5</number>
     </property>
    </widget>
   </widget>
@@ -278,7 +314,6 @@
  <tabstops>
   <tabstop>path_buttom</tabstop>
   <tabstop>start</tabstop>
-  <tabstop>not_use_proxy</tabstop>
   <tabstop>min_like</tabstop>
   <tabstop>keywords_input</tabstop>
   <tabstop>select_list</tabstop>
@@ -287,22 +322,5 @@
   <tabstop>text_show</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>path_buttom</sender>
-   <signal>clicked()</signal>
-   <receiver>download_speed</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>340</x>
-     <y>109</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>396</x>
-     <y>345</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -1,6 +1,9 @@
 from pixiv.network_speed import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QPushButton, QFileDialog
+import sys
+import threading as Thread
+from main import *
 
 
 class Worker(QtCore.QThread):
@@ -13,18 +16,37 @@ class Worker(QtCore.QThread):
 
 
 class Ui_MainWindow(object):
+
     def __init__(self, MainWindow):
         super(Ui_MainWindow, self).__init__()
         self.setupUi(MainWindow)
         self.main_process()
+        self._swrite = sys.stdout.write
+        # 替换原来print的方法
+        sys.stdout.write = self.onWrite
+
+    def onWrite(self, mystr):
+        '''
+        重建print函数
+        Mypstr：是待显示的字符串
+        '''
+        self.text_show.append(str(mystr))  # 在指定的区域显示提示信息
+        self.cursor = self.text_show.textCursor()
+        self.text_show.moveCursor(self.cursor.End)  # 光标移到最后，这样就会自动显示出来
+        QtWidgets.QApplication.processEvents()  # 一定加上这个功能，不然有卡顿
 
     def setupUi(self, MainWindow):
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(487, 375)
         MainWindow.setMinimumSize(QtCore.QSize(487, 375))
         MainWindow.setMaximumSize(QtCore.QSize(487, 375))
         MainWindow.setBaseSize(QtCore.QSize(487, 375))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("pixiv_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         MainWindow.setToolTipDuration(0)
+        MainWindow.setStyleSheet("")
         MainWindow.setInputMethodHints(QtCore.Qt.ImhNone)
         MainWindow.setToolButtonStyle(QtCore.Qt.ToolButtonFollowStyle)
         MainWindow.setAnimated(False)
@@ -71,9 +93,6 @@ class Ui_MainWindow(object):
         self.min_like.setMinimum(0)
         self.min_like.setMaximum(1000000)
         self.min_like.setObjectName("min_like")
-        self.not_use_proxy = QtWidgets.QCheckBox(self.centralwidget)
-        self.not_use_proxy.setGeometry(QtCore.QRect(300, 60, 91, 21))
-        self.not_use_proxy.setObjectName("not_use_proxy")
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         self.label_4.setGeometry(QtCore.QRect(30, 100, 54, 12))
         self.label_4.setObjectName("label_4")
@@ -82,22 +101,33 @@ class Ui_MainWindow(object):
         self.path.setObjectName("path")
         self.path_buttom = QtWidgets.QPushButton(self.centralwidget)
         self.path_buttom.setGeometry(QtCore.QRect(320, 100, 41, 20))
+        self.path_buttom.setChecked(False)
         self.path_buttom.setObjectName("path_buttom")
         self.for_single_dir = QtWidgets.QCheckBox(self.centralwidget)
         self.for_single_dir.setGeometry(QtCore.QRect(300, 20, 151, 20))
         self.for_single_dir.setObjectName("for_single_dir")
         self.download_speed = QtWidgets.QLabel(self.centralwidget)
-        self.download_speed.setGeometry(QtCore.QRect(370, 340, 54, 12))
+        self.download_speed.setGeometry(QtCore.QRect(400, 335, 71, 21))
         self.download_speed.setObjectName("download_speed")
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        self.label_5.setGeometry(QtCore.QRect(290, 60, 41, 20))
+        self.label_5.setObjectName("label_5")
+        self.thread_number = QtWidgets.QSpinBox(self.centralwidget)
+        self.thread_number.setGeometry(QtCore.QRect(330, 60, 42, 22))
+        self.thread_number.setMinimum(1)
+        self.thread_number.setMaximum(5000)
+        self.thread_number.setSingleStep(1)
+        self.thread_number.setProperty("value", 5)
+        self.thread_number.setObjectName("thread_number")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.path_buttom, self.start)
-        MainWindow.setTabOrder(self.start, self.not_use_proxy)
-        MainWindow.setTabOrder(self.not_use_proxy, self.min_like)
+        MainWindow.setTabOrder(self.start, self.min_like)
         MainWindow.setTabOrder(self.min_like, self.keywords_input)
         MainWindow.setTabOrder(self.keywords_input, self.select_list)
         MainWindow.setTabOrder(self.select_list, self.max_number)
@@ -114,33 +144,30 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "爬取目标:"))
         self.label_2.setText(_translate("MainWindow", "限制数量:"))
         self.label_3.setText(_translate("MainWindow", "最少喜爱人数:"))
-        self.not_use_proxy.setText(_translate("MainWindow", "免代理模式"))
         self.label_4.setText(_translate("MainWindow", "储存路径:"))
-        self.path.setText('/')
+        self.path.setText(_translate("MainWindow", "默认为程序所在目录"))
         self.path_buttom.setText(_translate("MainWindow", "..."))
         self.for_single_dir.setText(_translate("MainWindow", "为画册建立单独文件夹"))
-        self.download_speed.setText(_translate("MainWindow", "下载速度"))
-
-    '''事件主入口'''
+        self.download_speed.setText(_translate("MainWindow", "网络速度"))
+        self.label_5.setText(_translate("MainWindow", "线程数"))
 
     def main_process(self):
+        '''主入口'''
         self.net_spped()  # 网络测速初始化
         self.select_list.currentIndexChanged.connect(self.hide)
         self.start.clicked.connect(self.spider)  # 爬取按钮
         self.path_buttom.clicked.connect(self.explore)
 
-    '''若选择排名获取，则无需关键字栏'''
-
     def hide(self):
+        '''若选择排名获取，则无需关键字栏'''
         select_words = self.select_list.currentText()
         if select_words == '每日排名':
             self.keywords_input.hide()
         else:
             self.keywords_input.show()
 
-    '''网络信号事件'''
-
     def net_spped(self):
+        '''网络信号事件'''
         self._threads = Worker()
         self._threads.valueChanged.connect(self.set)
         self._threads.start()  # 开启网络测速线程
@@ -148,14 +175,31 @@ class Ui_MainWindow(object):
     def set(self, str):
         self.download_speed.setText(str)
 
-    '''选择保存目录事件'''
-
     def explore(self):
+        '''选择保存目录事件'''
         directory = QFileDialog.getExistingDirectory(None, "选择文件夹", "/")
-        self.path.setText(directory)
-
-    '''爬虫启动项'''
+        self.path.setText(directory + '\\')
 
     def spider(self):
+        '''爬虫启动项'''
+        select_words = self.select_list.currentText()
+        limits = int(self.max_number.text())
+        single_dir = bool(self.for_single_dir.checkState())
+        key_word = self.keywords_input.text()
+        like = int(self.min_like.text())
+        path = self.path.text()
+        if path == '默认为程序所在目录':
+            path = ''
+        thread_numbers = int(self.thread_number.text())
+        print(select_words, limits, single_dir, key_word, path, thread_numbers, like)
+        if select_words == '画师id':
+            T1 = Thread.Thread(target=pix_id, args=(key_word, limits, like, path, single_dir, thread_numbers))
+            T1.start()
+        if select_words == '搜索结果':
+            T2 = Thread.Thread(target=pix_search, args=(key_word, limits, like, path, single_dir, thread_numbers))
+            T2.start()
+        if select_words == '每日排名':
+            T3 = Thread.Thread(target=pix_rank, args=(limits, like, path, single_dir, thread_numbers))
+            T3.start()
 
-        pass
+    pass

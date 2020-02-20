@@ -4,9 +4,8 @@ from pixiv.spider import *
 # pix_id(4819066, limits=100, like=10)
 
 # pix_search('初音未来',limits=200,like=0 )
-
-pix_rank(limits=200, like=0)
-
+def main():
+    pix_search('初音未来', limits=200, like=0)
 
 '''
 运行前请确认是否成功连接代理
