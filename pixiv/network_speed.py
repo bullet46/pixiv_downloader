@@ -19,6 +19,7 @@ def speed_test():
     # 除法结果保留两位小数
     return str('%.2f' % (result / 1024)) + 'kb/s'
 
-if __name__ =='__main__':
+
+if __name__ == '__main__':
     while True:
         print(speed_test())

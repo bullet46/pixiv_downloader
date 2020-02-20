@@ -16,7 +16,7 @@ def isscalar(str):  # 判断输入是否均为数字，防止使用者将画师i
 
 def proxy_connect():  # 检查代理是否连接成功
     try:
-        requests.get('http://google.com', timeout=10)
+        requests.get('http://google.com', timeout=5)
         printer('国际互联网响应成功，代理正常', 'green', 1)
     except:
         printer('国际互联网未响应，请检查代理设置', 'red', 1)

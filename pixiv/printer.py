@@ -1,10 +1,11 @@
 color_dic = {  # 颜色的显示字典
-    'default': '37',
-    'green': '32',
-    'red': '31',
-    'yellow': '33',
-    'blue': '34'
+    'default': '#00000',
+    'green': '#82D900',
+    'red': '#EA0000',
+    'yellow': '#EAC100',
+    'blue': '#00E3E3'
 }
+
 
 
 def printer(string, color='default', style=0):
@@ -12,7 +13,6 @@ def printer(string, color='default', style=0):
     # 0为默认显示，1为分割线显示
     string = str(string)
     if style == 1:
-        print('\033[' + color_dic[color] + 'm' + 25 * '-' + string + 25 * '-' + '\033[0m')
+        print('<font color="{color}">{strMsg}</font>'.format(color=color_dic[color], strMsg=str(10 * '-' + string + 10 * '-')))
     else:
-        print('\033[' + color_dic[color] + 'm' + string + '\033[0m')
-
+        print('<font color="{color}">{strMsg}</font>'.format(color=color_dic[color], strMsg=string))

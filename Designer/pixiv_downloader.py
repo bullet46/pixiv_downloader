@@ -30,7 +30,9 @@ class Ui_MainWindow(object):
         重建print函数
         Mypstr：是待显示的字符串
         '''
-        self.text_show.append(str(mystr))  # 在指定的区域显示提示信息
+        self.text_show.insertHtml(str(mystr))  # 在指定的区域显示提示信息
+        self.text_show.append('')
+        sys.stdout.flush()
         self.cursor = self.text_show.textCursor()
         self.text_show.moveCursor(self.cursor.End)  # 光标移到最后，这样就会自动显示出来
         QtWidgets.QApplication.processEvents()  # 一定加上这个功能，不然有卡顿
@@ -43,7 +45,7 @@ class Ui_MainWindow(object):
         MainWindow.setMaximumSize(QtCore.QSize(487, 375))
         MainWindow.setBaseSize(QtCore.QSize(487, 375))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("pixiv_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Designer/pixiv_icon.png"), QtGui.QIcon.Normal)
         MainWindow.setWindowIcon(icon)
         MainWindow.setToolTipDuration(0)
         MainWindow.setStyleSheet("")
@@ -191,15 +193,12 @@ class Ui_MainWindow(object):
         if path == '默认为程序所在目录':
             path = ''
         thread_numbers = int(self.thread_number.text())
-        print(select_words, limits, single_dir, key_word, path, thread_numbers, like)
         if select_words == '画师id':
-            T1 = Thread.Thread(target=pix_id, args=(key_word, limits, like, path, single_dir, thread_numbers))
-            T1.start()
+            self.T1 = Thread.Thread(target=pix_id, args=(key_word, limits, like, path, single_dir, thread_numbers))
+            self.T1.start()
         if select_words == '搜索结果':
-            T2 = Thread.Thread(target=pix_search, args=(key_word, limits, like, path, single_dir, thread_numbers))
-            T2.start()
+            self.T1 = Thread.Thread(target=pix_search, args=(key_word, limits, like, path, single_dir, thread_numbers))
+            self.T1.start()
         if select_words == '每日排名':
-            T3 = Thread.Thread(target=pix_rank, args=(limits, like, path, single_dir, thread_numbers))
-            T3.start()
-
-    pass
+            self.T1 = Thread.Thread(target=pix_rank, args=(limits, like, path, single_dir, thread_numbers))
+            self.T1.start()
