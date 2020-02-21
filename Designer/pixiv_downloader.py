@@ -3,7 +3,29 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QPushButton, QFileDialog
 import sys
 import threading as Thread
+from pixiv.printer import *
 from main import *
+import inspect
+import ctypes
+
+
+def _async_raise(tid, exctype):
+    """用于强制结束线程的函数"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+
+
+def stop_thread(thread):
+    _async_raise(thread.ident, SystemExit)
 
 
 class Worker(QtCore.QThread):
@@ -184,21 +206,40 @@ class Ui_MainWindow(object):
 
     def spider(self):
         '''爬虫启动项'''
-        select_words = self.select_list.currentText()
-        limits = int(self.max_number.text())
-        single_dir = bool(self.for_single_dir.checkState())
-        key_word = self.keywords_input.text()
-        like = int(self.min_like.text())
-        path = self.path.text()
-        if path == '默认为程序所在目录':
-            path = ''
-        thread_numbers = int(self.thread_number.text())
-        if select_words == '画师id':
-            self.T1 = Thread.Thread(target=pix_id, args=(key_word, limits, like, path, single_dir, thread_numbers))
-            self.T1.start()
-        if select_words == '搜索结果':
-            self.T1 = Thread.Thread(target=pix_search, args=(key_word, limits, like, path, single_dir, thread_numbers))
-            self.T1.start()
-        if select_words == '每日排名':
-            self.T1 = Thread.Thread(target=pix_rank, args=(limits, like, path, single_dir, thread_numbers))
-            self.T1.start()
+        if self.start.text() == '开始爬取':
+            self.start.setText('结束爬取')
+            select_words = self.select_list.currentText()
+            limits = int(self.max_number.text())
+            single_dir = bool(self.for_single_dir.checkState())
+            key_word = self.keywords_input.text()
+            like = int(self.min_like.text())
+            path = self.path.text()
+            if path == '默认为程序所在目录':
+                path = ''
+            thread_numbers = int(self.thread_number.text())
+            if select_words == '画师id':
+                try:
+                    self.T1 = Thread.Thread(target=pix_id, args=(key_word, limits, like, path, single_dir, thread_numbers))
+                    self.T1.start()
+                except  Exception as e:
+                    print(e)
+            elif select_words == '搜索结果':
+                self.T1 = Thread.Thread(target=pix_search, args=(key_word, limits, like, path, single_dir, thread_numbers))
+                try:
+                    self.T1.start()
+                except  Exception as e:
+                    print(e)
+            elif select_words == '每日排名':
+                try:
+                    self.T1 = Thread.Thread(target=pix_rank, args=(limits, like, path, single_dir, thread_numbers))
+                    self.T1.start()
+                except  Exception as e:
+                    print(e)
+
+        elif self.start.text() == '结束爬取':
+            try:
+                self.start.setText('开始爬取')
+                stop_thread(self.T1)
+                printer('已结束主线程，正在等待其余分支线程完成',color='red',style=1)
+            except:
+                pass
