@@ -1,9 +1,11 @@
 import requests
 import json
 import os
+import sys
 import threading as td
 import datetime
-from pixiv.printer import *
+# from pixiv.printer import *
+import time
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36",
@@ -231,7 +233,7 @@ def download_all(lists, like=0, mode=0, save_path='', single_dir=False, thread=5
                     locals()['t{}'.format(i)].start()
                     break
                 except:
-                    printer('error','red')
+                    printer('error', 'red')
     printer('创建完成', 'yellow', 1)
 
 
