@@ -1,3 +1,5 @@
+# !/usr/bin/python
+# -*- coding: utf-8 -*-
 import sys
 from Designer.pixiv_downloader import *
 from PyQt5.QtWidgets import QApplication, QMainWindow

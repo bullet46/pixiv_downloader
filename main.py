@@ -1,11 +1,12 @@
+# !/usr/bin/python
+# -*- coding: utf-8 -*-
 from pixiv.pixiv import *
 from pixiv.spider import *
 from Designer.Main_dindows import *
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     # pix_id(4819066, limits=100, like=10)
-    #pix_search('初音未来', limits=200, like=0)
+    # pix_search('初音未来', limits=200, like=0)
     windows_main()
 
 '''

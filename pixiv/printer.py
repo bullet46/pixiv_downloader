@@ -13,6 +13,6 @@ def printer(string, color='default', style=0):
     # 0为默认显示，1为分割线显示
     string = str(string)
     if style == 1:
-        print('<font color="{color}">{strMsg}</font>'.format(color=color_dic[color], strMsg=str(10 * '-' + string + 10 * '-')))
+        print('<font color={color}>{strMsg}</font>'.format(color=color_dic[color], strMsg=str(10 * '-' + string + 10 * '-')))
     else:
-        print('<font color="{color}">{strMsg}</font>'.format(color=color_dic[color], strMsg=string))
+        print('<font color={color}>{strMsg}</font>'.format(color=color_dic[color], strMsg=string))

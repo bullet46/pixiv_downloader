@@ -37,6 +37,9 @@ def pix_id(id, limits=150, like=20, path='', single_dir=False, thread=5):
 
 
 def pix_search(search, limits=150, like=20, path='', single_dir=False, thread=5):
+    if search == '':
+        printer('请输入关键字','red',1)
+        exit()
     proxy_connect()
     lists = search_spider(search, limits)
     download_all(lists, like, 1, path, single_dir, thread)
