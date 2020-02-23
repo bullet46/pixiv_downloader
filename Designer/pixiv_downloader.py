@@ -141,13 +141,13 @@ class Ui_MainWindow(object):
         self.thread_number.setMinimum(1)
         self.thread_number.setMaximum(5000)
         self.thread_number.setSingleStep(1)
-        self.thread_number.setProperty("value", 5)
+        self.thread_number.setProperty("value", 8)
         self.thread_number.setObjectName("thread_number")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
+        self.start.setFocus()
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.path_buttom, self.start)
@@ -208,6 +208,7 @@ class Ui_MainWindow(object):
         '''爬虫启动项'''
         if self.start.text() == '开始爬取':
             self.start.setText('结束爬取')
+            self.start.setFocus()
             select_words = self.select_list.currentText()
             limits = int(self.max_number.text())
             single_dir = bool(self.for_single_dir.checkState())
@@ -239,6 +240,7 @@ class Ui_MainWindow(object):
         elif self.start.text() == '结束爬取':
             try:
                 self.start.setText('开始爬取')
+                self.start.setFocus()
                 stop_thread(self.T1)
                 printer('已结束主线程，正在等待其余分支线程完成',color='red',style=1)
             except:

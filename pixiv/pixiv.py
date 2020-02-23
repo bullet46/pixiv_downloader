@@ -3,6 +3,17 @@ from pixiv.printer import *
 import requests
 
 
+def robust(actual_do): #用于防止闪退的try装饰器
+    def add_robust(*args, **keyargs):
+        try:
+            return actual_do(*args, **keyargs)
+        except:
+            printer('Error execute: %s,已终止任务' % actual_do.__name__,'red')
+
+    return add_robust
+
+
+
 def isscalar(str):  # 判断输入是否均为数字，防止使用者将画师id与画师名称混淆
     try:
         float(str)
@@ -23,6 +34,7 @@ def proxy_connect():  # 检查代理是否连接成功
         exit()
 
 
+@robust
 def pix_id(id, limits=150, like=20, path='', single_dir=False, thread=5):
     '''
     画师搜索主函数封装
@@ -36,15 +48,17 @@ def pix_id(id, limits=150, like=20, path='', single_dir=False, thread=5):
     download_all(lists, like, 0, path, single_dir, thread)
 
 
+@robust
 def pix_search(search, limits=150, like=20, path='', single_dir=False, thread=5):
     if search == '':
-        printer('请输入关键字','red',1)
+        printer('请输入关键字', 'red', 1)
         exit()
     proxy_connect()
     lists = search_spider(search, limits)
     download_all(lists, like, 1, path, single_dir, thread)
 
 
+@robust
 def pix_rank(limits=200, like=20, path='', single_dir=False, thread=5):
     proxy_connect()
     lists = ranking_spider(limits)

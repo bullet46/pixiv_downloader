@@ -4,7 +4,7 @@ import os
 import sys
 import threading as td
 import datetime
-# from pixiv.printer import *
+from pixiv.printer import *
 import time
 
 headers = {
@@ -12,7 +12,7 @@ headers = {
     "Referer": "https://www.pixiv.net"
 }  # 请求头，请勿更改
 
-timeout = 200  # 最大等待时间，若网速过慢导致连接超时，可适当调大
+timeout = 25  # 最大等待时间，若网速过慢导致连接超时，可适当调大
 
 
 def parser(uid):
@@ -83,10 +83,10 @@ def downloader(uid, path='', like=0, single_dir=False):
         else:
             number = len(back[1])
             if single_dir and number != 1:
-                if bool(1 - os.path.exists(path + '画册子_{}'.format(back[0]))):  # 判断是否存在画册目录，如果不存在，创建目录
+                if bool(1 - os.path.exists(path + '画册_{}'.format(back[0]))):  # 判断是否存在画册目录，如果不存在，创建目录
                     os.makedirs(path + '画册_{}'.format(back[0]))
                 path = path + '画册_{}\\'.format(back[0])
-                print(path)
+                printer('成功创建文件夹'+path,'green')
             for i in range(number):
                 if i == 0:
                     reservoir(back[1][i], '{path}{name}.jpg'.format(path=path, name=back[0]))
@@ -108,6 +108,7 @@ def painter_spider(id, limits=200):
     page = 1
     all_arts = 0
     lists = []
+
     while all_arts <= limits:  # 如果目前所获得的的作品少于限定,则跳出循环
         url = 'https://www.pixiv.net/touch/ajax/user/illusts?id={id}&p={page}'.format(id=id, page=page)
         print('get:' + url)
